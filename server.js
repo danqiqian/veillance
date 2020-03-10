@@ -12,15 +12,20 @@ app.use(express.static('public'));
 var socket = require('socket.io');
 // io keeps tracking inputs and outputs messages
 var io=socket(server);
+var clients = [];
 
 // call back function, when connection event triggered
 io.sockets.on('connection',function(socket){
   console.log('new connection: '+ socket.id);
   // Every time you get a new connection
   // Emit a message over the socket connection that tells it all the images to populate with
-  //
+  for (let i = 0; i < clients.length; i++) {
+    socket.emit('createNewImage', clients[i].id);
+    clients[i].emit('createNewImage',socket.id);
+  }
+  clients.push(socket);
 
-  socket.broadcast.emit('createNewImage',socket.id);
+  // socket.broadcast.emit('createNewImage',socket.id);
 
   socket.on('disconnect',function(data){
     // What is the Socket.id of the client that disconnected?
@@ -34,7 +39,7 @@ io.sockets.on('connection',function(socket){
   });
 
   socket.on('mousemove',function(data){
-    socket.broadcast.emit('mousemove',data);
+    socket.broadcast.emit('mousemove',{'mouse':data,'id':socket.id});
     //io.sockets.et('mouse',data);
     // console.log('Socket connected: ' + socket.id);
   });
