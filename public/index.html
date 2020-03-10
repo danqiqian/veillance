@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+    var socket = io.connect();
+    var currentId;
+    //other client add image
+    socket.on('mousemove',function(data){
+      console.log('client data'+data);
+      // document.getElementById(data).style.left = data.x + "px";
+      // document.getElementById(data).style.top = data.y + "px"; 
+    });
+
+    socket.on('removeOldImage', function(data){
+      console.log(data);
+      document.getElementById(data).remove();
+    });
+
+    socket.on('createNewImage', function(data){
+      console.log('new socket id: '+data);
+      var pointerImg=document.createElement("IMG");
+      pointerImg.src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png";
+      pointerImg.id = data;
+      currentId = data;
+      var main =document.getElementById('Main');
+      main.appendChild(pointerImg);
+    });
+
+    socket.on('lostClient',function(data){
+      console.log('lost client: '+  data);
+    });
+
+    window.addEventListener('load',function() {
+        //FOR YOURSELF
+        //console pos to server
+        document.body.addEventListener('mousemove',function(e){
+            console.log('Send pos:'+e.clientX+','+e.clientY);
+            var data={
+              x:e.clientX,
+              y:e.clientY
+            }
+            // document.getElementById(currentId).style.left = data.x + "px";
+            // document.getElementById(currentId).style.top = data.y + "px"; 
+            socket.emit('mousemove',data);
+        });
+        //add img to mouseClicked()
+        document.body.addEventListener('mousemove',function(data){
+          document.getElementById("pointer").style.left = data.x + "px";
+          document.getElementById("pointer").style.top = data.y + "px"; 
+        });
+
+
+      });
+    </script>
+
+    <style type="text/css">
+     #pointer{ position:absolute; top:0px; left:0px;}
+     #pointer2{ position:absolute; top:0px; left:0px;}
+    </style>
+    <meta charset="utf-8">
+
+</head>
+  <body>
+    <div id="Main">
+         <img src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" id="pointer"/>
+         <!-- <img src="https://cdn1.iconfinder.com/data/icons/cursor-pointers/24/9-512.png" id="pointer2"/> -->
+         <div id="myDiv" style="position:absolute; top:0px; left:0px;" >
+    </div>
+
+</body></html>
