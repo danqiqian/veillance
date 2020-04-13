@@ -1,53 +1,64 @@
-﻿// use express to host p5.js in a directory
-// module name:express, get access to express
+var https = require('https');
+var fs = require('fs'); // Using the filesystem module
+
+var credentials = {
+  key: fs.readFileSync('/etc/letsencrypt/live/dqq200.itp.io/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/dqq200.itp.io/fullchain.pem')
+};
+
+// normal express code
 var express = require('express');
 // make an express application, install in app
 var app=express();
 //listen on port3000
-var server=app.listen(80);
+// var server=app.listen(80);
 //app to host everything in public directory
 app.use(express.static('public'));
+app.get('/', function(req, res) {
+	res.send("Hello World!");
+});
+
+var httpsServer = https.createServer(credentials, app);
+// Default HTTPS Port
+httpsServer.listen(443);
 
 // import statement
 var socket = require('socket.io');
 // io keeps tracking inputs and outputs messages
-var io=socket(server);
+var io=socket(httpsServer);
 var clients = [];
 
 // call back function, when connection event triggered
 io.sockets.on('connection',function(socket){
   console.log('new connection: '+ socket.id);
-  // Every time you get a new connection
-  // Emit a message over the socket connection that tells it all the images to populate with
+
   for (let i = 0; i < clients.length; i++) {
     socket.emit('createNewImage', clients[i].id);
+    // socket.broadcast.emit('createNewImage',socket.id);
     clients[i].emit('createNewImage',socket.id);
+      if (clients[i].id == socket.id) {
+    		clients.splice(i, 1);  
+       	}
   }
+
   clients.push(socket);
 
-  // socket.broadcast.emit('createNewImage',socket.id);
-
   socket.on('disconnect',function(data){
-    // What is the Socket.id of the client that disconnected?
-    // Emit that ID to all other active clients
-
     console.log('Socket disconnected: ' + socket.id);
-    socket.broadcast.emit('lostClient',data);
-
-
+    socket.broadcast.emit('lostClient', data);
     socket.broadcast.emit('removeOldImage',socket.id);
+    //find from the clients list,  find whatever is true for the function
+    let index = clients.findIndex(function(s) { return s.id == socket.id; });
+    clients.splice(index,1);
+  });
+
+  socket.on('click', function(data) {
+    socket.broadcast.emit('click',data);
   });
 
   socket.on('mousemove',function(data){
     socket.broadcast.emit('mousemove',{'mouse':data,'id':socket.id});
-    //io.sockets.et('mouse',data);
-    // console.log('Socket connected: ' + socket.id);
   });
-
 });
-
-  //runs for each user connection
-
-
 
 console.log("my socket server is running");
