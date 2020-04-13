@@ -37,7 +37,6 @@
       var ul=document.getElementById("paragraph");
       var li=document.createElement("li");
       li.innerHTML="new guy joins";
-      // ul.appendChild(li);
       aText.push(li.innerHTML);
       typewriter();
     });
@@ -63,10 +62,7 @@
 
       document.addEventListener('click', function(event) {
           getGeolocation();
-
           //console.log(event.target.classList);
-
-          console.log("YOU CLICKED");
           var click_li = document.createElement("click_li");
           click_li.innerHTML = "You clicked at " + ((Date.now() - startTime)/1000);
           aText.push(click_li.innerHTML);
@@ -76,10 +72,14 @@
         });
 
       document.querySelectorAll('.pointerClass').forEach(pointer => {
-        pointer.addEventListener('click', function(event) {
-          console.log("I'm been clicked");
+        //addeventlistener to every object in pointer img array
+        pointer.addEventListener('click', function(event,data) {
+          console.log("I'm been clicked, my socket id is " );
           console.log(event.currentTarget.id);
-          // event.currentTarget.id
+          // ?how to get the socket.id of the client?
+          console.log(data);
+          //send getLocation request to the server
+          socket.emit('getLocationFrom', data);
 
         })
       })
