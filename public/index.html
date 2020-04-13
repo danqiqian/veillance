@@ -2,9 +2,11 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css" />
     <script type="text/javascript">
     var socket = io.connect();
     var currentId;
+    var activeUser = false;
 
     socket.on('mousemove',function(data){
       //console.log('client data'+data);
@@ -31,6 +33,13 @@
       currentId = data;
       var main =document.getElementById('Main');
       main.appendChild(pointerImg);
+
+      var ul=document.getElementById("paragraph");
+      var li=document.createElement("li");
+      li.innerHTML="new guy joins";
+      // ul.appendChild(li);
+      aText.push(li.innerHTML);
+      typewriter();
     });
 
     socket.on('lostClient',function(data){
@@ -38,37 +47,65 @@
     });
 
     window.addEventListener('load',function() {
-        //FOR YOURSELF
-        //console pos to server
-        document.addEventListener('mousemove',function(e){
-            console.log('Send pos:'+e.clientX+','+e.clientY);
-            var data={
-              x:e.clientX,
-              y:e.clientY
-            }
+      var startTime = Date.now();
+          typewriter();
 
-            document.getElementById("pointer").style.left = data.x + "px";
-            document.getElementById("pointer").style.top = data.y + "px"; 
-            socket.emit('mousemove',data);
+      document.addEventListener('mousemove',function(e){
+          // console.log('Send pos:' + e.clientX + ',' + e.clientY);
+            var data = {
+              x : e.clientX,
+              y : e.clientY
+            }
+          document.getElementById("pointer").style.left = data.x + "px";
+          document.getElementById("pointer").style.top = data.y + "px"; 
+          socket.emit('mousemove', data);
         });
 
+      document.addEventListener('click', function(event) {
+          getGeolocation();
+
+          //console.log(event.target.classList);
+
+          console.log("YOU CLICKED");
+          var click_li = document.createElement("click_li");
+          click_li.innerHTML = "You clicked at " + ((Date.now() - startTime)/1000);
+          aText.push(click_li.innerHTML);
+          typewriter();
+
+          socket.emit('click', ((Date.now() - startTime)/1000));
+        });
+
+      document.querySelectorAll('.pointerClass').forEach(pointer => {
+        pointer.addEventListener('click', function(event) {
+          console.log("I'm been clicked");
+          console.log(event.currentTarget.id);
+          // event.currentTarget.id
+
+        })
+      })
+
+      window.addEventListener("resize", function(){
+          console.log("resize");
+          var windowY = window.innerHeight;
+          console.log( "windowY=" + windowY );
+          document.getElementById('box').style.height = windowY+"px";
+        });
 
       });
     </script>
-
-    <style type="text/css">
-     #pointer{ position:absolute; top:0px; left:0px;}
-     #pointer2{ position:absolute; top:0px; left:0px;}
-     .pointerClass { position:absolute; }
-    </style>
-    <meta charset="utf-8">
-
 </head>
-  <body>
-    <div id="Main">
-         <img class="pointerClass" src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" id="pointer"/>
-         <!-- <img src="https://cdn1.iconfinder.com/data/icons/cursor-pointers/24/9-512.png" id="pointer2"/> -->
-         <div id="myDiv" style="position:absolute; top:0px; left:0px;" >
-    </div>
 
-</body></html>
+  <body>
+    <div class="box" id="box">
+      <div id="typedtext"></div>
+      <div id="Main">
+         <img class="pointerClass" id="pointer" src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" />
+         <div id="myDiv" style="position:absolute; top:0px; left:0px;" >
+      </div>
+    </div>
+    <script src="./index.js"></script>
+    <script async defer
+    src="https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyAqZFDlgJDvZdHIOkPbpwl3bribyCC4fYQ">
+    </script>
+  </body>
+</html>
