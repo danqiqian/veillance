@@ -61,12 +61,13 @@ io.sockets.on('connection',function(socket){
   });
 
   socket.on('getLocationFrom',function(data){
-    //? these are two ways of send private msg to a client, idk which would work
+    // ? these are two ways of send private msg to a client, idk which would work?
     var toName = data.to;
     var toId = data.id;
-    socket.broadcast.to(anotherSocket.id).emit("getLocationFrom",data);
-    //change `${socketId}` to data?
-    io.to(`${socketId}`).emit('Hey, you just been assumed as a fake mouse');
+    socket.broadcast.to(anotherSocket.id).emit("getLocationFrom", data);
+    // ?change `${socketId}` to data?
+    io.to(`${socketId}`).emit('Hey, you just been assumed as a fake mouse','He/she knows your location now');
+    // ?besides sending msg, how to trgger a function to another client?
   });
 });
 
