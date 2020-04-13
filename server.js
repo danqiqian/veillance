@@ -59,6 +59,15 @@ io.sockets.on('connection',function(socket){
   socket.on('mousemove',function(data){
     socket.broadcast.emit('mousemove',{'mouse':data,'id':socket.id});
   });
+
+  socket.on('getLocationFrom',function(data){
+    //? these are two ways of send private msg to a client, idk which would work
+    var toName = data.to;
+    var toId = data.id;
+    socket.broadcast.to(anotherSocket.id).emit("getLocationFrom",data);
+    //change `${socketId}` to data?
+    io.to(`${socketId}`).emit('Hey, you just been assumed as a fake mouse');
+  });
 });
 
 console.log("my socket server is running");
