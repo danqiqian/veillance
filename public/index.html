@@ -7,9 +7,9 @@
     var socket = io.connect();
     var currentId;
     var activeUser = false;
+    var locations = {};
 
-    socket.on('mousemove',function(data){
-      //console.log('client data'+data);
+    socket.on('mousemove', function(data){
       if (document.getElementById(data.id)) {
         var div = document.getElementById(data.id);
         div.style.left = data.mouse.x + "px";
@@ -30,9 +30,22 @@
       pointerImg.src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png";
       pointerImg.id = data;
       pointerImg.classList.add("pointerClass");
+      pointerImg.classList.add("otherPointer");
       currentId = data;
       var main =document.getElementById('Main');
       main.appendChild(pointerImg);
+
+      pointerImg.addEventListener('click', function(event,data) {
+        // console.log("I'm been clicked, my socket id is " );
+        console.log("currentTarget.id=" + event.currentTarget.id);
+        // ?how to get the socket.id of the client?
+        console.log(event.currentTarget.id);
+        console.log(locations[event.currentTarget.id]); // should be "Brooklyn, NY"
+        var locationText = document.createElement("locationText");
+        locationText.innerHTML = "You just clicked at an alive human being in " + locations[event.currentTarget.id];
+        aText.push(locationText.innerHTML);
+        typewriter();
+      });
 
       var ul=document.getElementById("paragraph");
       var li=document.createElement("li");
@@ -41,13 +54,21 @@
       typewriter();
     });
 
-    socket.on('lostClient',function(data){
+    socket.on('lostClient', function(data){
       console.log('lost client: '+  data);
+    });
+
+    socket.on('currentLocation', function(data){
+      console.log("currentLocation data="+data);
+      locations[data.id] = data.location;
+      // { '314236234' : "Brooklyn, NY", '23o4uoqiwru': "New York, NY" };
     });
 
     window.addEventListener('load',function() {
       var startTime = Date.now();
           typewriter();
+          getGeolocation();
+          setInterval(function(){ getGeolocation(); }, 10000);
 
       document.addEventListener('mousemove',function(e){
           // console.log('Send pos:' + e.clientX + ',' + e.clientY);
@@ -61,28 +82,18 @@
         });
 
       document.addEventListener('click', function(event) {
-          getGeolocation();
           //console.log(event.target.classList);
           var click_li = document.createElement("click_li");
           click_li.innerHTML = "You clicked at " + ((Date.now() - startTime)/1000);
-          aText.push(click_li.innerHTML);
-          typewriter();
+          // aText.push(click_li.innerHTML);
+          // typewriter();
 
           socket.emit('click', ((Date.now() - startTime)/1000));
         });
 
-      document.querySelectorAll('.pointerClass').forEach(pointer => {
-        //addeventlistener to every object in pointer img array
-        pointer.addEventListener('click', function(event,data) {
-          console.log("I'm been clicked, my socket id is " );
-          console.log(event.currentTarget.id);
-          // ?how to get the socket.id of the client?
-          console.log(data);
-          //send getLocation request to the server
-          socket.emit('getLocationFrom', data);
-
-        })
-      })
+      document.addEventListener('currentLocation',function(locationName){
+          console.log('currentLocation function heard');
+      });
 
       window.addEventListener("resize", function(){
           console.log("resize");
@@ -106,6 +117,9 @@
     <script src="./index.js"></script>
     <script async defer
     src="https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyAqZFDlgJDvZdHIOkPbpwl3bribyCC4fYQ">
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqZFDlgJDvZdHIOkPbpwl3bribyCC4fYQ&callback=initMap">
     </script>
   </body>
 </html>

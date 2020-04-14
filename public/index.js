@@ -1,6 +1,7 @@
 var aText = new Array(
-"Welcome to MouseinMic",
-"Made by Danqi","I'm watching you"
+"Welcome to NakedMice",
+"You are naked in the digital age","Made by Danqi Qian",
+"Big thanks to Shawn Van Every & Katie Han"
 );
 var iSpeed = 100; // time delay of print out
 var iIndex = 0; // start printing array at this posision
@@ -15,8 +16,6 @@ function typewriter()
 {
  sContents =  ' ';
  iRow = Math.max(0, iIndex-iScrollAt);
- // console.log("iRow = " + iRow);//row num
- // console.log("iIndex = " + iIndex);//array num
  var destination = document.getElementById("typedtext");
  //if it's less than 20 texts
  while ( iRow < iIndex ) {
@@ -40,20 +39,33 @@ function typewriter()
 }
 
 function getGeolocation(){
-  var gerCor = false;
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(successCallback, errorCallback, {});
     function successCallback(currentPosition) {
-    var lat = currentPosition.coords.latitude,
-        lon = currentPosition.coords.longitude;
-    console.log(lat,lon);
+          var lat = currentPosition.coords.latitude,
+              lon = currentPosition.coords.longitude;
+          geocodeLatLng(lat,lon);
+          console.log(lat,lon);
+    }
+    function errorCallback(e) {
+      //alert(e);
+    }
+  } else {
+    //alert("Not Allowed");
   }
-
-  function errorCallback(e) {
-    //alert(e);
+  function geocodeLatLng(lat, lon) {
+    var geocoder = new google.maps.Geocoder;
+    var infowindow = new google.maps.InfoWindow;
+    var latlng = {lat: lat, lng: lon};
+    geocoder.geocode({'location': latlng}, function(results, status) {
+      if (status === 'OK') {
+        var locationName = results[0].address_components[3].long_name + ', ' + results[0].address_components[5].long_name;
+        var locationGuess = results[0].types[0];
+        socket.emit('currentLocation', locationName);
+        console.log("you just clicked on an alive human from " + locationName + ", might be in " + locationGuess);
+      } else {
+        window.alert('Geocoder failed due to: ' + status);
+      }
+    });
   }
-
-} else {
-  //alert("Not Allowed");
-}
 }
