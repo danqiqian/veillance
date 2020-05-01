@@ -2,7 +2,10 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <script src="./index.js"></script>
+    <script src="./text.js"></script>
     <script type="text/javascript">
     var socket = io.connect();
     var currentId;
@@ -18,49 +21,64 @@
     });
 
     socket.on('removeOldImage', function(data){
-      console.log(data);
+      // console.log(data);
       if (document.getElementById(data)) {
       document.getElementById(data).remove();
       }
     });
 
-    socket.on('createNewImage', function(data){
-      console.log('new socket id: '+data);
-      var pointerImg=document.createElement("IMG");
-      pointerImg.src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png";
-      pointerImg.id = data;
-      pointerImg.classList.add("pointerClass");
-      pointerImg.classList.add("otherPointer");
-      currentId = data;
-      var main =document.getElementById('Main');
-      main.appendChild(pointerImg);
+    socket.on('click',function(data){
+      console.log("otherclicks ");
+      console.log("click id = " + data.id);
+      if(document.getElementById(data.id)){
+          // console.log(data.mouse);
+          drawText(data.mouse);
+      }
+    });
 
-      pointerImg.addEventListener('click', function(event,data) {
-        // console.log("I'm been clicked, my socket id is " );
-        console.log("currentTarget.id=" + event.currentTarget.id);
-        // ?how to get the socket.id of the client?
-        console.log(event.currentTarget.id);
+    socket.on('createNewMouse', function(data){
+      // console.log('new socket id: ' + data);
+      var newMouse=document.createElement("MOUSE");
+      newMouse.id = data;
+      newMouse.innerHTML="I'm a new mouse";
+      // newMouse.classList.add("mouseClass");
+      newMouse.classList.add("otherMouse");
+      currentId = data;
+      var main =document.getElementById('box');
+      main.appendChild(newMouse);
+
+      newMouse.addEventListener('click', function(event,data) {
+        console.log("currentTarget.id=" + event.currentTarget.id); // should be socket.id
         console.log(locations[event.currentTarget.id]); // should be "Brooklyn, NY"
         var locationText = document.createElement("locationText");
+        // console.log("locations"+locations[event.currentTarget.id]);
+        var location_text = locations[event.currentTarget.id];
+        // var myPos={ x:event.clientX,
+        //     y:event.clientY,
+        //     txt: locations[event.currentTarget.id]}
+        var myPos={ x: event.clientX,
+            y: event.clientY }
+        leaveText(myPos);
         locationText.innerHTML = "You just clicked at an alive human being in " + locations[event.currentTarget.id];
         aText.push(locationText.innerHTML);
         typewriter();
       });
 
-      var ul=document.getElementById("paragraph");
-      var li=document.createElement("li");
-      li.innerHTML="new guy joins";
-      aText.push(li.innerHTML);
-      typewriter();
+      // var ul=document.getElementById("paragraph");
+      // var li=document.createElement("li");
+      // li.innerHTML="new guy joins";
+      // aText.push(li.innerHTML);
+      // typewriter();
     });
 
     socket.on('lostClient', function(data){
-      console.log('lost client: '+  data);
+      // console.log('lost client: '+  data);
     });
 
     socket.on('currentLocation', function(data){
-      console.log("currentLocation data="+data);
       locations[data.id] = data.location;
+      console.log("currentLocation data="+data);
+      console.log(locations);
       // { '314236234' : "Brooklyn, NY", '23o4uoqiwru': "New York, NY" };
     });
 
@@ -68,7 +86,8 @@
       var startTime = Date.now();
           typewriter();
           getGeolocation();
-          setInterval(function(){ getGeolocation(); }, 10000);
+           validata();
+          // setInterval(function(){ getGeolocation(); }, 20000);
 
       document.addEventListener('mousemove',function(e){
           // console.log('Send pos:' + e.clientX + ',' + e.clientY);
@@ -76,23 +95,23 @@
               x : e.clientX,
               y : e.clientY
             }
-          document.getElementById("pointer").style.left = data.x + "px";
-          document.getElementById("pointer").style.top = data.y + "px"; 
+          // document.getElementById("pointer").style.left = data.x + "px";
+          // document.getElementById("pointer").style.top = data.y + "px"; 
           socket.emit('mousemove', data);
         });
 
       document.addEventListener('click', function(event) {
-          //console.log(event.target.classList);
-          var click_li = document.createElement("click_li");
-          click_li.innerHTML = "You clicked at " + ((Date.now() - startTime)/1000);
-          // aText.push(click_li.innerHTML);
-          // typewriter();
-
-          socket.emit('click', ((Date.now() - startTime)/1000));
+          console.log(event.target.classList);
+          data={
+            x : event.clientX,
+            y : event.clientY
+          }
+          socket.emit('click', data);
         });
 
       document.addEventListener('currentLocation',function(locationName){
           console.log('currentLocation function heard');
+
       });
 
       window.addEventListener("resize", function(){
@@ -102,24 +121,52 @@
           document.getElementById('box').style.height = windowY+"px";
         });
 
+      document.getElementById("btnOK").addEventListener("click", function () {
+          document.getElementById("dialogBox").style.visibility = "hidden";
+          document.getElementById("pano").style.visibility = "visible";
+          //document.getElementById("typedtext").textContent = "thanks for letting me know";
+          document.getElementById("typedtext").style.visibility = "visible";
       });
+      document.getElementById("btnDA").addEventListener("click", function () {
+        validata();
+      });
+    });
     </script>
 </head>
 
   <body>
     <div class="box" id="box">
-      <div id="typedtext"></div>
+      <!-- <div class="mouseClass"><span>Brooklyn,<br>New York</span></div> -->
       <div id="Main">
-         <img class="pointerClass" id="pointer" src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" />
-         <div id="myDiv" style="position:absolute; top:0px; left:0px;" >
+         <!-- <img class="pointerClass" id="pointer" src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" /> -->
+         <div id="typedtext" style="position:absolute;"></div>
+      </div>
+      <div id="map" style="position:absolute"></div>
+      <div id="pano"></div>
+    <div class = "dialogBox" id="dialogBox">
+      <div class="window">
+        <div class="titlebar"></div>
+              <div id="text"></div>
+        <div class="content">
+            <h4>"Location$$" would like to use your<br>current location.</h4>
+            <p id="para">Click on OK then I'll show you something super cool.</p>
+            <a class="osxbutton" id="btnDA" href="#" style="margin-left:20px;" onclick="counter++">Don't Allow</a>
+            <a class="osxbutton" id="btnOK" href="#" style="margin-left:250px;">OK</a>
+          </div>
       </div>
     </div>
-    <script src="./index.js"></script>
-    <script async defer
-    src="https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyAqZFDlgJDvZdHIOkPbpwl3bribyCC4fYQ">
+  </div>
+    <!-- <script async defer
+      src="https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyCdAmvC-FXHa8bF_4r9LkwQC2Pkrca8Nvw">
+    </script> -->
+    <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
+
+    <!-- <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCdAmvC-FXHa8bF_4r9LkwQC2Pkrca8Nvw&callback=initialize">
+    </script> -->
+<script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCdAmvC-FXHa8bF_4r9LkwQC2Pkrca8Nvw&callback=initialize">
     </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqZFDlgJDvZdHIOkPbpwl3bribyCC4fYQ&callback=initMap">
-    </script>
+
   </body>
 </html>
