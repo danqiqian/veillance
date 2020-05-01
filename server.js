@@ -38,6 +38,7 @@ io.sockets.on('connection',function(socket){
     clients[i].emit('createNewImage',socket.id);
       if (clients[i].id == socket.id) {
     		clients.splice(i, 1);  
+        break;
        	}
   }
 
@@ -49,6 +50,7 @@ io.sockets.on('connection',function(socket){
     socket.broadcast.emit('removeOldImage',socket.id);
     //find from the clients list,  find whatever is true for the function
     let index = clients.findIndex(function(s) { return s.id == socket.id; });
+    console.log(index);
     clients.splice(index,1);
   });
 
