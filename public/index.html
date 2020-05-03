@@ -37,7 +37,7 @@
     });
 
     socket.on('createNewMouse', function(data){
-      // console.log('new socket id: ' + data);
+      console.log('new socket id: ' + data);
       var newMouse=document.createElement("MOUSE");
       newMouse.id = data;
       newMouse.innerHTML="I'm a new mouse";
@@ -51,24 +51,14 @@
         console.log("currentTarget.id=" + event.currentTarget.id); // should be socket.id
         console.log(locations[event.currentTarget.id]); // should be "Brooklyn, NY"
         var locationText = document.createElement("locationText");
-        // console.log("locations"+locations[event.currentTarget.id]);
         var location_text = locations[event.currentTarget.id];
-        // var myPos={ x:event.clientX,
-        //     y:event.clientY,
-        //     txt: locations[event.currentTarget.id]}
         var myPos={ x: event.clientX,
-            y: event.clientY }
-        leaveText(myPos);
-        locationText.innerHTML = "You just clicked at an alive human being in " + locations[event.currentTarget.id];
-        aText.push(locationText.innerHTML);
-        typewriter();
+                    y: event.clientY }
+        leaveText(myPos, location_text);
+        // locationText.innerHTML = "You just clicked at an alive human being in " + locations[event.currentTarget.id];
+        // aText.push(locationText.innerHTML);
+        // typewriter();
       });
-
-      // var ul=document.getElementById("paragraph");
-      // var li=document.createElement("li");
-      // li.innerHTML="new guy joins";
-      // aText.push(li.innerHTML);
-      // typewriter();
     });
 
     socket.on('lostClient', function(data){
@@ -86,7 +76,6 @@
       var startTime = Date.now();
           typewriter();
           getGeolocation();
-           validata();
           // setInterval(function(){ getGeolocation(); }, 20000);
 
       document.addEventListener('mousemove',function(e){
@@ -138,7 +127,6 @@
     <div class="box" id="box">
       <!-- <div class="mouseClass"><span>Brooklyn,<br>New York</span></div> -->
       <div id="Main">
-         <!-- <img class="pointerClass" id="pointer" src="https://www.pinclipart.com/picdir/big/375-3752865_free-png-download-mouse-svg-cursor-mac-png.png" /> -->
          <div id="typedtext" style="position:absolute;"></div>
       </div>
       <div id="map" style="position:absolute"></div>
@@ -150,9 +138,9 @@
         <div class="content">
             <h4>"Location$$" would like to use your<br>current location.</h4>
             <p id="para">Click on OK then I'll show you something super cool.</p>
-            <a class="osxbutton" id="btnDA" href="#" style="margin-left:20px;" onclick="counter++">Don't Allow</a>
-            <a class="osxbutton" id="btnOK" href="#" style="margin-left:250px;">OK</a>
-          </div>
+            <a class="osxbutton" id="btnDA" href="#" style="margin-left:110px;margin-top:13px;" onclick="counter++">Don't Allow</a>
+            <a class="osxbutton" id="btnOK" href="#" style="margin-left:250px;margin-top:13px;">OK</a>
+        </div>
       </div>
     </div>
   </div>

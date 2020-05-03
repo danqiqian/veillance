@@ -40,7 +40,8 @@ function typewriter(){
 
 function getGeolocation(){
   if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(successCallback, errorCallback, {});
+    // navigator.geolocation.watchPosition(successCallback, errorCallback, {});
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
     function successCallback(currentPosition) {
           var lat = currentPosition.coords.latitude,
               lon = currentPosition.coords.longitude;
@@ -130,12 +131,13 @@ function getGeolocation(){
     y = e.y;
     console.log(x+","+y);
     $i.css({
-        "z-index": 9999,
+        "z-index": "9999",
         "top": y + 5,
         "left": x,
         "position": "absolute",
         "font-weight": "bold",
-        "color": "#000000"
+        "background-color":"white",
+        //"font-family": "system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue","Lucida Grande", "Segoe UI""
       });
       $("body").append($i);
     $i.animate({
@@ -149,21 +151,23 @@ function getGeolocation(){
   }
 
   var b_idx = 0;
-  $(".otherMouse").click(function(e) { leaveText(e) } );
-  var leaveText=function(e){
-    console.log("im clicked");
-    var b = new Array("location","location");
-    // var b = [];
-    // b.push(e.txt);
-    // console.log(e.t);
-    var $j = $("<p/>").text(b[b_idx]);
-    b_idx = (b_idx + 1) % b.length;
+  var leaveText=function(e,loctext){
+    // console.log("im clicked");
+    console.log("loctext:"+loctext);
+    // var b = loctext.split(" ");
+    // var $j = $("<p/>").text(b[b_idx]);
+    var $j = $("<p/>").text(loctext);
+    // b_idx = (b_idx + 1) % b.length;
     var x = e.x,
     y = e.y;
     $j.css({
-        "z-index": 999,
+        "z-index": "999",
+        "width":"50px",
+        "height":"50px",
         "top": y,
         "left": x,
+        "background-color":"white",
+        "font-size":"12px",
         "position": "absolute",
         "font-weight": "bold",
         "color": "#000000"
