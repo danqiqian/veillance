@@ -33,9 +33,14 @@ io.sockets.on('connection',function(socket){
   console.log('new connection: '+ socket.id);
 
   for (let i = 0; i < clients.length; i++) {
-    socket.emit('createNewImage', clients[i].id);
+    socket.emit('createNewMouse', clients[i].id);
+
+    if (clients[i].location) {
+      socket.emit('currentLocation',{'id':clients[i].id, 'location':clients[i].location});
+    }
+
     // socket.broadcast.emit('createNewImage',socket.id);
-    clients[i].emit('createNewImage',socket.id);
+    clients[i].emit('createNewMouse',socket.id);
       if (clients[i].id == socket.id) {
     		clients.splice(i, 1);  
         break;
@@ -46,8 +51,10 @@ io.sockets.on('connection',function(socket){
 
   socket.on('disconnect',function(data){
     console.log('Socket disconnected: ' + socket.id);
-    socket.broadcast.emit('lostClient', data);
-    socket.broadcast.emit('removeOldImage',socket.id);
+    //socket.broadcast.emit('lostClient', socket.id);
+    //socket.broadcast.emit('removeOldImage',socket.id);
+    io.emit('lostClient', socket.id);
+    io.emit('removeOldImage',socket.id);
     //find from the clients list,  find whatever is true for the function
     let index = clients.findIndex(function(s) { return s.id == socket.id; });
     console.log(index);
@@ -55,19 +62,30 @@ io.sockets.on('connection',function(socket){
   });
 
   socket.on('click', function(data) {
-    socket.broadcast.emit('click',data);
+    socket.broadcast.emit('click',{'mouse':data,'id':socket.id});
+    // console.log("click data: " + data);
+    console.log("clicked id"+socket.id);
     // console.log(locationName);
     // socket.broadcast.emit('currentLocation',{'id':socket.id, 'location':locationName});
   });
 
   socket.on('mousemove',function(data){
     socket.broadcast.emit('mousemove',{'mouse':data,'id':socket.id});
+    // console.log(data);
   });
 
   socket.on('currentLocation',function(data){
+// Find my client
+    for (var i = 0; i < clients.length; i++) {
+      if (clients[i].id == socket.id) {
+        // this is me
+        // save my location for later peopel
+        clients[i].location = data;
+      }
+    }
     socket.broadcast.emit('currentLocation',{'id':socket.id, 'location':data});
     console.log("curr loc server: " + data);
   });
 });
 
-console.log("my socket server is running");
+console.log("my socket server is running now");
