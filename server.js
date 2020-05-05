@@ -82,7 +82,9 @@ io.sockets.on('connection',function(socket){
         // save my location for later peopel
         clients[i].location = data;
       }
+
     }
+    console.log("server receive from geoL:" + data);
     socket.broadcast.emit('currentLocation',{'id':socket.id, 'location':data});
     console.log("curr loc server: " + data);
   });
