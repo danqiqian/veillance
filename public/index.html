@@ -7,16 +7,19 @@
     <script src="./index.js"></script>
     <script src="./text.js"></script>
     <script type="text/javascript">
-    var socket = io.connect();
+    var socket;
     var currentId;
     var activeUser = false;
+    var okClick = false;
     var locations = {};
 
+    function initSocket(){
+    socket = io.connect();
     socket.on('mousemove', function(data){
       if (document.getElementById(data.id)) {
         var div = document.getElementById(data.id);
-        div.style.left = data.mouse.x + "px";
-        div.style.top = data.mouse.y + "px"; 
+        div.style.left = data.mouse.x * window.innerWidth + "px";
+        div.style.top = data.mouse.y * window.innerHeight + "px"; 
       }
     });
 
@@ -28,8 +31,8 @@
     });
 
     socket.on('click',function(data){
-      console.log("otherclicks ");
-      console.log("click id = " + data.id);
+      // console.log("otherclicks ");
+      // console.log("click id = " + data.id);
       if(document.getElementById(data.id)){
           // console.log(data.mouse);
           drawText(data.mouse);
@@ -52,12 +55,9 @@
         console.log(locations[event.currentTarget.id]); // should be "Brooklyn, NY"
         var locationText = document.createElement("locationText");
         var location_text = locations[event.currentTarget.id];
-        var myPos={ x: event.clientX,
+        var myPos={ x: event.clientX ,
                     y: event.clientY }
         leaveText(myPos, location_text);
-        // locationText.innerHTML = "You just clicked at an alive human being in " + locations[event.currentTarget.id];
-        // aText.push(locationText.innerHTML);
-        // typewriter();
       });
     });
 
@@ -67,10 +67,11 @@
 
     socket.on('currentLocation', function(data){
       locations[data.id] = data.location;
-      console.log("currentLocation data="+data);
+      console.log(" currentLocation data = " + data);
       console.log(locations);
       // { '314236234' : "Brooklyn, NY", '23o4uoqiwru': "New York, NY" };
     });
+}
 
     window.addEventListener('load',function() {
       var startTime = Date.now();
@@ -80,22 +81,29 @@
 
       document.addEventListener('mousemove',function(e){
           // console.log('Send pos:' + e.clientX + ',' + e.clientY);
+
             var data = {
-              x : e.clientX,
-              y : e.clientY
+              x : e.clientX / window.innerWidth,
+              y : e.clientY / window.innerHeight
             }
+
+            // console.log("mouse ratio: x:" + data.x + "y: " + data.y);
           // document.getElementById("pointer").style.left = data.x + "px";
           // document.getElementById("pointer").style.top = data.y + "px"; 
-          socket.emit('mousemove', data);
+          if(okClick === true){
+            socket.emit('mousemove', data);
+          }
         });
 
       document.addEventListener('click', function(event) {
           console.log(event.target.classList);
           data={
-            x : event.clientX,
-            y : event.clientY
+            x : event.clientX / window.innerWidth,
+            y : event.clientY / window.innerHeight
           }
-          socket.emit('click', data);
+          if(okClick === true){
+            socket.emit('click', data);
+          }
         });
 
       document.addEventListener('currentLocation',function(locationName){
@@ -113,9 +121,15 @@
       document.getElementById("btnOK").addEventListener("click", function () {
           document.getElementById("dialogBox").style.visibility = "hidden";
           document.getElementById("pano").style.visibility = "visible";
-          //document.getElementById("typedtext").textContent = "thanks for letting me know";
           document.getElementById("typedtext").style.visibility = "visible";
+          document.getElementById("loading_text").style.visibility = "visible";
+          setTimeout(function(){
+            document.getElementById("loading_text").style.visibility = "hidden";
+          }, 2000);
+          okClick = true;
+          initSocket();
       });
+
       document.getElementById("btnDA").addEventListener("click", function () {
         validata();
       });
@@ -127,10 +141,12 @@
     <div class="box" id="box">
       <!-- <div class="mouseClass"><span>Brooklyn,<br>New York</span></div> -->
       <div id="Main">
+              <p id="loading_text">Loading... Please wait!</p>
          <div id="typedtext" style="position:absolute;"></div>
       </div>
       <div id="map" style="position:absolute"></div>
-      <div id="pano"></div>
+      <div id="pano">
+            </div>
     <div class = "dialogBox" id="dialogBox">
       <div class="window">
         <div class="titlebar"></div>

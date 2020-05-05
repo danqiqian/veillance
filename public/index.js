@@ -20,7 +20,7 @@ function typewriter(){
  //if it's less than 20 texts
  while ( iRow < iIndex ) {
   //store texts in sContents
-  sContents += aText[iRow++] + '<br />';
+  sContents += '<span class="typing_text">' + aText[iRow++] + '</span>' + '<br />';
   //console.log("sContents = " + sContents);
 }
  destination.innerHTML = sContents + aText[iIndex].substring(0, iTextPos) + "_";
@@ -66,10 +66,14 @@ function getGeolocation(){
         var streetName = results[0].formatted_address;
         var locationGuess = results[0].types[0];
         // console.log(results);
-        socket.emit('currentLocation', locationName);
-        console.log("thanks for letting me know you are at " +locationName);
+        if(okClick === true){
+          socket.emit('currentLocation', locationName);
+          console.log("geolocation sent locationName to server");
+        }
+        console.log("your current location" +locationName);
         var text_loc = document.createElement("text_LOC");
-        text_loc.innerHTML = "thanks for letting me know you are at " +locationName;
+        // text_loc.classList.add(typing_text);
+        text_loc.innerHTML = "<span> thanks for letting me know you are at " +locationName + "</span>";
         aText.push(text_loc.innerHTML);
         typewriter();
         // console.log("you just clicked on an alive human from " + locationName + ", might be in " + locationGuess);
@@ -127,9 +131,9 @@ function getGeolocation(){
     var a = new Array("you know","I know","you know I know","I know you know");
     var $i = $("<span/>").text(a[a_idx]);
     a_idx = (a_idx + 1) % a.length;
-    var x = e.x,
-    y = e.y;
-    console.log(x+","+y);
+    var x = e.x * window.innerWidth,
+    y = e.y * window.innerHeight;
+    // console.log(x+","+y);
     $i.css({
         "z-index": "9999",
         "top": y + 5,
@@ -159,7 +163,7 @@ function getGeolocation(){
     var $j = $("<p/>").text(loctext);
     // b_idx = (b_idx + 1) % b.length;
     var x = e.x,
-    y = e.y;
+    y = e.y ;
     $j.css({
         "z-index": "999",
         "width":"50px",
